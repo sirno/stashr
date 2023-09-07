@@ -19,6 +19,12 @@ impl DirEntryExt for std::fs::DirEntry {
     }
 }
 
+fn move_file(origin: &Path, target: &Path) -> Result<(), std::io::Error> {
+    std::fs::copy(origin, target)?;
+    std::fs::remove_file(origin)?;
+    Ok(())
+}
+
 impl Stash {
     pub fn load(name: String) -> Result<Self, std::io::Error> {
         let home = std::env::var("HOME").unwrap();
@@ -48,7 +54,7 @@ impl Stash {
     pub fn push(&mut self, files: Vec<String>) {
         files.iter().for_each(|f| {
             let path = self.path.join(format!("{}_{}", self.latest + 1, f));
-            std::fs::rename(&f, &path).unwrap();
+            move_file(Path::new(f), &path).unwrap();
         });
         self.latest += 1;
     }
@@ -70,7 +76,7 @@ impl Stash {
             if splits.next().unwrap().parse::<usize>().unwrap() == self.latest {
                 let stash_file = file.unwrap().path();
                 let target = splits.remainder().unwrap();
-                std::fs::rename(&stash_file, &target).unwrap();
+                move_file(&stash_file, Path::new(target)).unwrap();
             }
         }
     }
