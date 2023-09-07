@@ -22,10 +22,7 @@ stashr
 
 ## Install
 
-Not yet published, run
-
 ```bash
-rustup default nightly
-cargo install --path .
+cargo install stashr
 ```
 
