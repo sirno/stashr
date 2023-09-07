@@ -5,7 +5,10 @@ pub struct App {}
 
 impl App {
     pub fn main(args: Args) {
-        println!("{:?}", args.files);
-        let stash = Stash::load(args.stash.clone()).unwrap();
+        let mut stash = Stash::load(args.stash.clone()).unwrap();
+        match args.files {
+            Some(files) => stash.push(files),
+            None => stash.pop(),
+        }
     }
 }
