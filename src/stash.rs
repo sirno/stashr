@@ -20,9 +20,14 @@ impl DirEntryExt for std::fs::DirEntry {
 }
 
 fn move_file(origin: &Path, target: &Path) -> Result<(), std::io::Error> {
-    std::fs::copy(origin, target)?;
-    std::fs::remove_file(origin)?;
-    Ok(())
+    match std::fs::rename(origin, target) {
+        Ok(_) => Ok(()),
+        Err(_) => {
+            std::fs::copy(origin, target)?;
+            std::fs::remove_file(origin)?;
+            Ok(())
+        }
+    }
 }
 
 impl Stash {
