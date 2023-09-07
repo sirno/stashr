@@ -14,7 +14,7 @@ Stash some files
 stashr foo.txt bar.txt
 ```
 
-Get then back
+Get them back
 
 ```bash
 stashr
@@ -25,7 +25,7 @@ stashr
 Not yet published, run
 
 ```bash
-rustup default nightly 
+rustup default nightly
 cargo install --path .
 ```
 
