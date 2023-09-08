@@ -76,7 +76,7 @@ impl Stash {
 
     pub fn pop(&mut self) {
         if self.latest == 0 {
-            println!("Stash ({}) is empty", self.name);
+            println!("stashr: {} stash is empty", self.name);
             return;
         }
 
