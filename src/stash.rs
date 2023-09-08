@@ -58,8 +58,18 @@ impl Stash {
 
     pub fn push(&mut self, files: Vec<String>) {
         files.iter().for_each(|f| {
-            let path = self.path.join(format!("{}_{}", self.latest + 1, f));
-            move_file(Path::new(f), &path).unwrap();
+            let file_path = Path::new(f);
+            if !file_path.exists() {
+                println!("stashr: {}: No such file or directory", file_path.display());
+                return;
+            }
+            let file_name = file_path.file_name().unwrap();
+            let path = self.path.join(format!(
+                "{}_{}",
+                self.latest + 1,
+                file_name.to_string_lossy()
+            ));
+            move_file(file_path, &path).unwrap();
         });
         self.latest += 1;
     }
