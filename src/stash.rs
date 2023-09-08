@@ -20,14 +20,10 @@ impl DirEntryExt for std::fs::DirEntry {
 }
 
 fn move_file(origin: &Path, target: &Path) -> Result<(), std::io::Error> {
-    match std::fs::rename(origin, target) {
-        Ok(_) => Ok(()),
-        Err(_) => {
-            std::fs::copy(origin, target)?;
-            std::fs::remove_file(origin)?;
-            Ok(())
-        }
-    }
+    std::fs::rename(origin, target).or_else(|_| {
+        std::fs::copy(origin, target)?;
+        std::fs::remove_file(origin)
+    })
 }
 
 impl Stash {
@@ -69,7 +65,16 @@ impl Stash {
                 self.latest + 1,
                 file_name.to_string_lossy()
             ));
-            move_file(file_path, &path).unwrap();
+            match move_file(&file_path, &path) {
+                Ok(_) => {}
+                Err(_) => {
+                    println!(
+                        "stashr: {}: Cannot move file or directory",
+                        file_path.display()
+                    );
+                    return;
+                }
+            }
         });
         self.latest += 1;
     }
@@ -91,7 +96,13 @@ impl Stash {
             if splits.next().unwrap().parse::<usize>().unwrap() == self.latest {
                 let stash_file = file.unwrap().path();
                 let target = splits.remainder().unwrap();
-                move_file(&stash_file, Path::new(target)).unwrap();
+                match move_file(&stash_file, Path::new(target)) {
+                    Ok(_) => {}
+                    Err(_) => {
+                        println!("stashr: {}: Cannot move file or directory", target);
+                        continue;
+                    }
+                }
             }
         }
     }
