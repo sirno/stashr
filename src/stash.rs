@@ -65,12 +65,11 @@ impl Stash {
                 println!("stashr: {}: No such file or directory", file_path.display());
                 return;
             }
+            self.latest += 1;
             let file_name = file_path.file_name().unwrap();
-            let path = self.path.join(format!(
-                "{}_{}",
-                self.latest + 1,
-                file_name.to_string_lossy()
-            ));
+            let path = self
+                .path
+                .join(format!("{}_{}", self.latest, file_name.to_string_lossy()));
             match move_file(&file_path, &path) {
                 Ok(_) => {}
                 Err(_) => {
@@ -78,11 +77,12 @@ impl Stash {
                         "stashr: {}: Cannot move file or directory",
                         file_path.display()
                     );
+                    // rollback latest
+                    self.pop();
                     return;
                 }
             }
         });
-        self.latest += 1;
     }
 
     pub fn pop(&mut self) {
@@ -111,5 +111,6 @@ impl Stash {
                 }
             }
         }
+        self.latest -= 1;
     }
 }
