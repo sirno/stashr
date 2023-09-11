@@ -19,11 +19,17 @@ impl DirEntryExt for std::fs::DirEntry {
     }
 }
 
-fn move_file(origin: &Path, target: &Path) -> Result<(), std::io::Error> {
-    std::fs::rename(origin, target).or_else(|_| {
-        std::fs::copy(origin, target)?;
-        std::fs::remove_file(origin)
-    })
+fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
+    let items = vec![origin];
+    let options = fs_extra::dir::CopyOptions::new();
+
+    fs_extra::move_items(&items, target, &options)
+        .and_then(|_| Ok(()))
+        .or_else(|_| {
+            fs_extra::copy_items(&items, target, &options)?;
+            fs_extra::remove_items(&items)
+        })
+        .map_err(|e| anyhow::anyhow!(e))
 }
 
 impl Stash {
