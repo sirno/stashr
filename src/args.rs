@@ -9,4 +9,8 @@ pub struct Args {
     /// Stash to be used
     #[arg(short, long, default_value = "default")]
     pub stash: String,
+
+    /// List all stashes
+    #[arg(short, long)]
+    pub list: bool,
 }

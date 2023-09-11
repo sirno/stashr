@@ -58,6 +58,10 @@ impl Stash {
         Ok(Self { name, path, latest })
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.latest == 0
+    }
+
     pub fn push(&mut self, files: Vec<String>) {
         files.iter().for_each(|f| {
             let file_path = Path::new(f);
@@ -112,5 +116,33 @@ impl Stash {
             }
         }
         self.latest -= 1;
+    }
+
+    pub fn content(&self) -> Vec<(usize, String)> {
+        let files = std::fs::read_dir(&self.path).unwrap();
+        let mut list = Vec::new();
+        for file in files {
+            let p = match file.as_ref().map(|dir_entry| dir_entry.file_name_string()) {
+                Ok(p) => p,
+                Err(_) => continue,
+            };
+            let mut splits = p.split("_");
+            let n = splits.next().unwrap().parse::<usize>().unwrap();
+            let target = splits.remainder().unwrap();
+            list.push((n, target.to_string()));
+        }
+        list.sort_by_key(|s| s.0);
+        list
+    }
+}
+
+impl std::fmt::Display for Stash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let list = self.content();
+        writeln!(f, "{}", self.name)?;
+        for (n, target) in list {
+            writeln!(f, "  {}: {}", n, target)?;
+        }
+        Ok(())
     }
 }
