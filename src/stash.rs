@@ -35,7 +35,8 @@ fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
 impl Stash {
     pub fn load(name: String) -> Result<Self, std::io::Error> {
         let home = std::env::var("HOME").unwrap();
-        let path = Path::new(&home).join(".cache/stashr/").join(&name).clone();
+        let cache_dir = std::env::var("STASHR_CACHE_DIR").unwrap_or(".cache/stashr".to_string());
+        let path = Path::new(&home).join(cache_dir).join(&name).clone();
 
         std::fs::create_dir_all(&path).unwrap();
 
