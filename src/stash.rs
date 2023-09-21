@@ -20,16 +20,31 @@ impl DirEntryExt for std::fs::DirEntry {
 }
 
 fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
-    let items = vec![origin];
-    let options = fs_extra::dir::CopyOptions::new();
-
-    fs_extra::move_items(&items, target, &options)
-        .and_then(|_| Ok(()))
-        .or_else(|_| {
-            fs_extra::copy_items(&items, target, &options)?;
-            fs_extra::remove_items(&items)
-        })
-        .map_err(|e| anyhow::anyhow!(e))
+    if origin.is_dir() {
+        let options = fs_extra::dir::CopyOptions::new();
+        return fs_extra::dir::move_dir(origin, target, &options)
+            .and_then(|_| Ok(()))
+            .or_else(|_| {
+                fs_extra::dir::copy(origin, target, &options)?;
+                fs_extra::dir::remove(origin)
+            })
+            .map_err(|e| anyhow::anyhow!(e));
+    } else if origin.is_file() {
+        let options = fs_extra::file::CopyOptions::new();
+        fs_extra::file::move_file(origin, target, &options)
+            .and_then(|_| Ok(()))
+            .or_else(|_| {
+                fs_extra::file::copy(origin, target, &options)?;
+                fs_extra::file::remove(origin)
+            })
+            .map_err(|e| anyhow::anyhow!(e))
+    } else {
+        let e = fs_extra::error::Error::new(
+            fs_extra::error::ErrorKind::Other,
+            "Not a directory or file",
+        );
+        Err(anyhow::anyhow!(e))
+    }
 }
 
 impl Stash {
