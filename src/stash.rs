@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::{Path, PathBuf};
 
 pub struct Stash {
@@ -21,19 +22,20 @@ impl DirEntryExt for std::fs::DirEntry {
 
 fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
     if origin.is_dir() {
-        let options = fs_extra::dir::CopyOptions::new();
-        return fs_extra::dir::move_dir(origin, target, &options)
+        fs::rename(origin, target)
             .and_then(|_| Ok(()))
             .or_else(|_| {
+                let options = fs_extra::dir::CopyOptions::new().copy_inside(true);
+                fs::create_dir_all(target)?;
                 fs_extra::dir::copy(origin, target, &options)?;
                 fs_extra::dir::remove(origin)
             })
-            .map_err(|e| anyhow::anyhow!(e));
+            .map_err(|e| anyhow::anyhow!(e))
     } else if origin.is_file() {
-        let options = fs_extra::file::CopyOptions::new();
-        fs_extra::file::move_file(origin, target, &options)
+        fs::rename(origin, target)
             .and_then(|_| Ok(()))
             .or_else(|_| {
+                let options = fs_extra::file::CopyOptions::new();
                 fs_extra::file::copy(origin, target, &options)?;
                 fs_extra::file::remove(origin)
             })
@@ -79,13 +81,13 @@ impl Stash {
     }
 
     pub fn push(&mut self, files: Vec<String>) {
+        self.latest += 1;
         files.iter().for_each(|f| {
             let file_path = Path::new(f);
             if !file_path.exists() {
                 println!("stashr: {}: No such file or directory", file_path.display());
                 return;
             }
-            self.latest += 1;
             let file_name = file_path.file_name().unwrap();
             let path = self
                 .path
