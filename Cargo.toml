@@ -4,6 +4,7 @@ version = "0.3.2"
 edition = "2021"
 description = "A dynamic move command or simple file stash"
 license = "MIT"
+repository = "https://github.com/sirno/stashr"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
