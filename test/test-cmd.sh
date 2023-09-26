@@ -51,8 +51,12 @@ run_cmds
 
 cd /mount/vdrive
 
+find .
+
 populate_directory
 run_cmds
+
+find .
 
 echo "Finished..."
 
