@@ -25,7 +25,7 @@ fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
         fs::rename(origin, target)
             .and_then(|_| Ok(()))
             .or_else(|_| {
-                let options = fs_extra::dir::CopyOptions::new().copy_inside(true);
+                let options = fs_extra::dir::CopyOptions::new().content_only(true);
                 fs::create_dir_all(target)?;
                 fs_extra::dir::copy(origin, target, &options)?;
                 fs_extra::dir::remove(origin)
