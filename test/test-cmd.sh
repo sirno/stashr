@@ -3,14 +3,14 @@
 # test.sh: run some stashr commands
 
 
-function populate_directory {
+function create_directory {
     mkdir subdir
     touch a
     touch subdir/b
 }
 
-function run_cmds {
-    echo "Starting tests in $(pwd) ..."
+function test_invocation {
+    echo "Testing invocations in $(pwd) ..."
 
     stashr a
     if [[ -f a ]]; then
@@ -43,20 +43,41 @@ function run_cmds {
     fi
 }
 
+function test_errors {
+    echo "Testing errors in $(pwd) ..."
+
+    msg=`stashr file`
+    if [[ $msg != "stashr: file: No such file or directory" ]]; then
+        echo "Incorrect error message: $msg"
+    fi
+
+    msg=`stashr`
+    if [[ $msg != "stashr: default stash is empty" ]]; then
+        echo "Incorrect error message: $msg"
+    fi
+}
+
+echo "Running stashr tests ..."
+echo "--- --- ---"
+
+# test in local file system
 mkdir /usr/test_dir
 cd /usr/test_dir
 
-populate_directory
-run_cmds
+create_directory
+test_invocation
+test_errors
 
+echo "--- --- ---"
+
+# test in mounted file system
 cd /mount/vdrive
 
-find .
+create_directory
+test_invocation
+test_errors
 
-populate_directory
-run_cmds
-
-find .
+echo "--- --- ---"
 
 echo "Finished..."
 
