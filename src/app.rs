@@ -11,8 +11,15 @@ impl App {
         }
 
         let mut stash = Stash::load(args.stash.clone()).unwrap();
+
+        let stash_op = if args.copy {
+            crate::stash::copy_file
+        } else {
+            crate::stash::move_file
+        };
+
         match args.files {
-            Some(files) => stash.push(files),
+            Some(files) => stash.push(files, stash_op),
             None => stash.pop(),
         }
     }

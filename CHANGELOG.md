@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.0 --- Copy Cat (Apr 02, 2024)
+
+- Copy mode with `-c`
+
 ## 0.3.0 --- Librarian Ledger (Sep 12, 2023)
 
 - Added option to list contents of stashes

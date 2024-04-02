@@ -13,4 +13,8 @@ pub struct Args {
     /// List all stashes
     #[arg(short, long)]
     pub list: bool,
+
+    /// Copy mode
+    #[arg(short, long)]
+    pub copy: bool,
 }

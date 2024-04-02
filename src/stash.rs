@@ -20,7 +20,9 @@ impl DirEntryExt for std::fs::DirEntry {
     }
 }
 
-fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
+type TransferOp = fn(&Path, &Path) -> anyhow::Result<()>;
+
+pub fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
     if origin.is_dir() {
         fs::rename(origin, target)
             .and_then(|_| Ok(()))
@@ -40,6 +42,25 @@ fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
                 fs_extra::file::remove(origin)
             })
             .map_err(|e| anyhow::anyhow!(e))
+    } else {
+        let e = fs_extra::error::Error::new(
+            fs_extra::error::ErrorKind::Other,
+            "Not a directory or file",
+        );
+        Err(anyhow::anyhow!(e))
+    }
+}
+
+pub fn copy_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
+    if origin.is_dir() {
+        let options = fs_extra::dir::CopyOptions::new().content_only(true);
+        fs::create_dir_all(target)?;
+        fs_extra::dir::copy(origin, target, &options)?;
+        Ok(())
+    } else if origin.is_file() {
+        let options = fs_extra::file::CopyOptions::new();
+        fs_extra::file::copy(origin, target, &options)?;
+        Ok(())
     } else {
         let e = fs_extra::error::Error::new(
             fs_extra::error::ErrorKind::Other,
@@ -80,7 +101,7 @@ impl Stash {
         self.latest == 0
     }
 
-    pub fn push(&mut self, files: Vec<String>) {
+    pub fn push(&mut self, files: Vec<String>, op: TransferOp) {
         self.latest += 1;
         files.iter().for_each(|f| {
             let file_path = Path::new(f);
@@ -92,11 +113,11 @@ impl Stash {
             let path = self
                 .path
                 .join(format!("{}_{}", self.latest, file_name.to_string_lossy()));
-            match move_file(&file_path, &path) {
+            match op(&file_path, &path) {
                 Ok(_) => {}
                 Err(_) => {
                     println!(
-                        "stashr: {}: Cannot move file or directory",
+                        "stashr: {}: Cannot stash file or directory",
                         file_path.display()
                     );
                     // rollback latest
@@ -127,7 +148,7 @@ impl Stash {
                 match move_file(&stash_file, Path::new(target)) {
                     Ok(_) => {}
                     Err(_) => {
-                        println!("stashr: {}: Cannot move file or directory", target);
+                        println!("stashr: {}: Cannot unstash file or directory", target);
                         continue;
                     }
                 }
