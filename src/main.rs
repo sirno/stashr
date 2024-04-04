@@ -2,6 +2,7 @@
 
 mod app;
 mod args;
+mod ops;
 mod stash;
 
 use clap::Parser;

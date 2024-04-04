@@ -1,4 +1,4 @@
-use std::fs;
+use crate::ops::{move_file, TransferOp};
 use std::path::{Path, PathBuf};
 
 pub struct Stash {
@@ -17,56 +17,6 @@ impl DirEntryExt for std::fs::DirEntry {
             .file_name()
             .map(|f| f.to_string_lossy().into_owned())
             .unwrap_or_default()
-    }
-}
-
-type TransferOp = fn(&Path, &Path) -> anyhow::Result<()>;
-
-pub fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
-    if origin.is_dir() {
-        fs::rename(origin, target)
-            .and_then(|_| Ok(()))
-            .or_else(|_| {
-                let options = fs_extra::dir::CopyOptions::new().content_only(true);
-                fs::create_dir_all(target)?;
-                fs_extra::dir::copy(origin, target, &options)?;
-                fs_extra::dir::remove(origin)
-            })
-            .map_err(|e| anyhow::anyhow!(e))
-    } else if origin.is_file() {
-        fs::rename(origin, target)
-            .and_then(|_| Ok(()))
-            .or_else(|_| {
-                let options = fs_extra::file::CopyOptions::new();
-                fs_extra::file::copy(origin, target, &options)?;
-                fs_extra::file::remove(origin)
-            })
-            .map_err(|e| anyhow::anyhow!(e))
-    } else {
-        let e = fs_extra::error::Error::new(
-            fs_extra::error::ErrorKind::Other,
-            "Not a directory or file",
-        );
-        Err(anyhow::anyhow!(e))
-    }
-}
-
-pub fn copy_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
-    if origin.is_dir() {
-        let options = fs_extra::dir::CopyOptions::new().content_only(true);
-        fs::create_dir_all(target)?;
-        fs_extra::dir::copy(origin, target, &options)?;
-        Ok(())
-    } else if origin.is_file() {
-        let options = fs_extra::file::CopyOptions::new();
-        fs_extra::file::copy(origin, target, &options)?;
-        Ok(())
-    } else {
-        let e = fs_extra::error::Error::new(
-            fs_extra::error::ErrorKind::Other,
-            "Not a directory or file",
-        );
-        Err(anyhow::anyhow!(e))
     }
 }
 
