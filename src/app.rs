@@ -47,7 +47,7 @@ impl App {
         }
 
         if count == 0 {
-            println!("stashr: Nothing is stashed");
+            println!("stashr: Stash is empty");
         }
     }
 }
