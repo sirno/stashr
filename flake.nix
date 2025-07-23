@@ -6,7 +6,7 @@
   inputs = {
     flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/*";
 
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -27,15 +27,7 @@
       overlays = [
         rust-overlay.overlays.default
         (final: prev: {
-          rustToolchain = final.rust-bin.selectLatestNightlyWith (
-            toolchain:
-            toolchain.default.override {
-              extensions = [
-                "rust-analyzer"
-                "rust-src"
-              ];
-            }
-          );
+          rustToolchain = final.rust-bin.stable.latest.default;
         })
       ];
 

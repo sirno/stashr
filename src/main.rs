@@ -1,5 +1,3 @@
-#![feature(str_split_remainder)]
-
 mod app;
 mod args;
 mod ops;

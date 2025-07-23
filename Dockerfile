@@ -1,4 +1,4 @@
-FROM rustlang/rust:nightly
+FROM rust:1.88
 
 WORKDIR /usr/src/stashr
 COPY . .

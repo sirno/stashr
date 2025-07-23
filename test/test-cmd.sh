@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 
+#
 # test.sh: run some stashr commands
 
 
@@ -52,7 +52,7 @@ function test_errors {
     fi
 
     msg=`stashr`
-    if [[ $msg != "stashr: default stash is empty" ]]; then
+    if [[ $msg != "stashr: \"default\": Stash is empty" ]]; then
         echo "Incorrect error message: $msg"
     fi
 }

@@ -12,7 +12,6 @@ pub fn move_file(origin: &Path, target: &Path) -> anyhow::Result<()> {
     }
 
     fs::rename(origin, target)
-        .and_then(|_| Ok(()))
         .or_else(|_| {
             if origin.is_dir() {
                 let options = fs_extra::dir::CopyOptions::new().content_only(true);

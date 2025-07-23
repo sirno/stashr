@@ -1,4 +1,4 @@
-use crate::ops::{move_file, TransferOp};
+use crate::ops::{TransferOp, move_file};
 use std::path::{Path, PathBuf};
 
 pub struct Stash {
@@ -63,7 +63,7 @@ impl Stash {
             let path = self
                 .path
                 .join(format!("{}_{}", self.latest, file_name.to_string_lossy()));
-            match op(&file_path, &path) {
+            match op(file_path, &path) {
                 Ok(_) => {}
                 Err(_) => {
                     println!(
@@ -72,7 +72,6 @@ impl Stash {
                     );
                     // rollback latest
                     self.pop();
-                    return;
                 }
             }
         });
@@ -91,17 +90,20 @@ impl Stash {
                 Ok(p) => p,
                 Err(_) => continue,
             };
-            let mut splits = p.split("_");
-            if splits.next().unwrap().parse::<usize>().unwrap() == self.latest {
-                let stash_file = file.unwrap().path();
-                let target = splits.remainder().unwrap();
-                match move_file(&stash_file, Path::new(target)) {
-                    Ok(_) => {}
-                    Err(_) => {
-                        println!("stashr: {}: Cannot unstash file or directory", target);
-                        continue;
+
+            match p.rsplit_once("_") {
+                Some((n, target)) if n.parse::<usize>().unwrap_or_default() == self.latest => {
+                    let stash_file = file.unwrap().path();
+                    let target_path = Path::new(target);
+                    match move_file(&stash_file, target_path) {
+                        Ok(_) => {}
+                        Err(_) => {
+                            println!("stashr: {}: Cannot unstash file or directory", target);
+                            continue;
+                        }
                     }
                 }
+                _ => continue,
             }
         }
         self.latest -= 1;
@@ -115,10 +117,9 @@ impl Stash {
                 Ok(p) => p,
                 Err(_) => continue,
             };
-            let mut splits = p.split("_");
-            let n = splits.next().unwrap().parse::<usize>().unwrap();
-            let target = splits.remainder().unwrap();
-            list.push((n, target.to_string()));
+            if let Some((n, target)) = p.rsplit_once("_") {
+                list.push((n.parse::<usize>().unwrap_or_default(), target.to_string()));
+            }
         }
         list.sort_by_key(|s| s.0);
         list
