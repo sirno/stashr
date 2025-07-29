@@ -4,9 +4,10 @@
 
 
 function create_directory {
-    mkdir subdir
+    mkdir dir
     touch a
-    touch subdir/b
+    touch dir/b
+    touch c_c
 }
 
 function test_invocation {
@@ -14,25 +15,35 @@ function test_invocation {
 
     stashr a
     if [[ -f a ]]; then
-        echo "Could not push a file"
+        echo "Could not push `a` file"
     fi
 
     stashr
     if [[ ! -f a ]]; then
-        echo "Could not pop a file"
+        echo "Could not pop `a` file"
     fi
 
-    stashr subdir
-    if [[ -d subdir ]]; then
-        echo "Could not push a dir"
+    stashr dir
+    if [[ -d dir ]]; then
+        echo "Could not push `dir` directory"
     fi
 
     stashr
-    if [[ ! -d subdir ]]; then
-        echo "Could not pop a dir"
+    if [[ ! -d dir ]]; then
+        echo "Could not pop `dir` directory"
     fi
 
-    stashr a subdir
+    stashr c_c
+    if [[ -f c_c ]]; then
+        echo "Could not push `c_c` file"
+    fi
+
+    stashr
+    if [[ ! -f c_c ]]; then
+        echo "Could not pop `c_c` file"
+    fi
+
+    stashr a dir c_c
     if [ `ls -1 2> /dev/null | wc -l` -gt 0 ]; then
         echo "Could not push all"
     fi
