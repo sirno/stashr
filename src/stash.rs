@@ -91,14 +91,14 @@ impl Stash {
                 Err(_) => continue,
             };
 
-            match p.rsplit_once("_") {
+            match p.split_once("_") {
                 Some((n, target)) if n.parse::<usize>().unwrap_or_default() == self.latest => {
                     let stash_file = file.unwrap().path();
                     let target_path = Path::new(target);
                     match move_file(&stash_file, target_path) {
                         Ok(_) => {}
                         Err(_) => {
-                            println!("stashr: {}: Cannot unstash file or directory", target);
+                            println!("stashr: {target}: Cannot unstash file or directory");
                             continue;
                         }
                     }
@@ -117,7 +117,7 @@ impl Stash {
                 Ok(p) => p,
                 Err(_) => continue,
             };
-            if let Some((n, target)) = p.rsplit_once("_") {
+            if let Some((n, target)) = p.split_once("_") {
                 list.push((n.parse::<usize>().unwrap_or_default(), target.to_string()));
             }
         }
